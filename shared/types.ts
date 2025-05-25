@@ -1,0 +1,16 @@
+
+export type MenuItem = {
+    title: string,
+    url: string,
+    icon: React.ReactElement,
+};
+
+export type Agent = {
+    id: number,
+    name: string
+}
+
+export type UserClient = {
+    id: number,
+    name: string
+}

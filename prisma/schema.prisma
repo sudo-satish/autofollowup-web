@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  email     String   @unique
+  name      String?
+  role      Role     @default(USER)
+  userClients UserClient[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Agent {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  name      String
+  conversations Followup[]
+  conversationAuditTrails FollowupAuditTrail[]
+  systemPrompt String
+}
+
+model UserClient {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  name      String
+  phone     String
+  countryCode String
+  email     String?
+  conversations Followup[]
+  conversationAuditTrails FollowupAuditTrail[]
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Followup {
+  id        Int      @id @default(autoincrement())
+  userClientId Int
+  userClient UserClient @relation(fields: [userClientId], references: [id])
+  agentId Int
+  agent Agent @relation(fields: [agentId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  threads Thread[]
+  followupDate DateTime?
+  status FollowupStatus @default(DRAFT)
+  context String?
+  summary String?
+}
+
+model FollowupAuditTrail {
+  id  Int @id @default(autoincrement())
+  userClientId Int
+  userClient UserClient @relation(fields: [userClientId], references: [id])
+  agentId Int
+  agent Agent @relation(fields: [agentId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  followupDate DateTime?
+  status FollowupStatus @default(DRAFT)
+  context String?
+  summary String?
+}
+
+enum FollowupStatus {
+  DRAFT
+  SCHEDULED
+  COMPLETED
+  FAILED
+}
+
+model Thread {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  conversationId Int
+  conversation Followup @relation(fields: [conversationId], references: [id])
+  messages Message[]
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  threadId Int
+  thread Thread @relation(fields: [threadId], references: [id])
+}
