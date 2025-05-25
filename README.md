@@ -15,6 +15,7 @@ bun dev
 ```
 
 TODO:
+
 - Select user
 - Select follow-up person
 - Select channel
@@ -22,7 +23,7 @@ TODO:
 - Add context
 - Chat thread (Overview)
 - Status
-
+- Add channels in thread
 
 Migrate prisma changes to DB
 
@@ -31,6 +32,7 @@ npx prisma migrate dev --name add-user-client-relation
 ```
 
 Seed DB
+
 ```
 npx prisma db seed
 ```

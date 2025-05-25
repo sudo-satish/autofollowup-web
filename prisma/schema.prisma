@@ -15,11 +15,11 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  email     String   @unique
-  name      String?
-  role      Role     @default(USER)
+  id          Int          @id @default(autoincrement())
+  createdAt   DateTime     @default(now())
+  email       String       @unique
+  name        String?
+  role        Role         @default(USER)
   userClients UserClient[]
 }
 
@@ -29,54 +29,54 @@ enum Role {
 }
 
 model Agent {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  name      String
-  conversations Followup[]
+  id                      Int                  @id @default(autoincrement())
+  createdAt               DateTime             @default(now())
+  name                    String
+  conversations           Followup[]
   conversationAuditTrails FollowupAuditTrail[]
-  systemPrompt String
+  systemPrompt            String
 }
 
 model UserClient {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  name      String
-  phone     String
-  countryCode String
-  email     String?
-  conversations Followup[]
+  id                      Int                  @id @default(autoincrement())
+  createdAt               DateTime             @default(now())
+  name                    String
+  phone                   String
+  countryCode             String
+  email                   String?
+  conversations           Followup[]
   conversationAuditTrails FollowupAuditTrail[]
-  userId Int
-  user User @relation(fields: [userId], references: [id])
+  userId                  Int
+  user                    User                 @relation(fields: [userId], references: [id])
 }
 
 model Followup {
-  id        Int      @id @default(autoincrement())
+  id           Int            @id @default(autoincrement())
   userClientId Int
-  userClient UserClient @relation(fields: [userClientId], references: [id])
-  agentId Int
-  agent Agent @relation(fields: [agentId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  threads Thread[]
+  userClient   UserClient     @relation(fields: [userClientId], references: [id])
+  agentId      Int
+  agent        Agent          @relation(fields: [agentId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  messages     Message[]
   followupDate DateTime?
-  status FollowupStatus @default(DRAFT)
-  context String?
-  summary String?
+  status       FollowupStatus @default(DRAFT)
+  context      String?
+  summary      String?
 }
 
 model FollowupAuditTrail {
-  id  Int @id @default(autoincrement())
+  id           Int            @id @default(autoincrement())
   userClientId Int
-  userClient UserClient @relation(fields: [userClientId], references: [id])
-  agentId Int
-  agent Agent @relation(fields: [agentId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userClient   UserClient     @relation(fields: [userClientId], references: [id])
+  agentId      Int
+  agent        Agent          @relation(fields: [agentId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   followupDate DateTime?
-  status FollowupStatus @default(DRAFT)
-  context String?
-  summary String?
+  status       FollowupStatus @default(DRAFT)
+  context      String?
+  summary      String?
 }
 
 enum FollowupStatus {
@@ -86,19 +86,38 @@ enum FollowupStatus {
   FAILED
 }
 
-model Thread {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  conversationId Int
-  conversation Followup @relation(fields: [conversationId], references: [id])
-  messages Message[]
+model Message {
+  id          Int         @id @default(autoincrement())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  followupId  Int
+  followup    Followup    @relation(fields: [followupId], references: [id])
+  contentType ContentType @default(TEXT)
+  content     String
+  role        MessageRole @default(USER)
+  channel     Channel     @default(WHATSAPP)
 }
 
-model Message {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  threadId Int
-  thread Thread @relation(fields: [threadId], references: [id])
+enum ContentType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  FILE
+  LINK
+  OTHER
+}
+
+enum MessageRole {
+  USER
+  AGENT
+  SYSTEM
+}
+
+enum Channel {
+  WHATSAPP
+  TELEGRAM
+  SMS
+  EMAIL
+  OTHER
 }
