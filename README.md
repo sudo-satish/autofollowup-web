@@ -36,3 +36,9 @@ Seed DB
 ```
 npx prisma db seed
 ```
+
+Run playground
+
+```
+ npx ts-node --compiler-options '{"module":"CommonJS"}' -r tsconfig-paths/register playground.ts
+```

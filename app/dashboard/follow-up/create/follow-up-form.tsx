@@ -54,71 +54,99 @@ export function FollowUpForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-        Send followup message to
-        <FormField
-          control={form.control}
-          name='client'
-          render={({ field }) => (
-            <FormItem>
-              <ClientSelectionField
-                selectedClient={field.value}
-                setSelectedClient={field.onChange}
-              />
-            </FormItem>
-          )}
-        />
-        on
-        <FormField
-          control={form.control}
-          name='dateTime'
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <div>
-                  <DatePicker
-                    minDate={new Date()}
-                    selected={field.value}
-                    onChange={field.onChange}
-                    showTimeSelect
-                    dateFormat='Pp'
-                    className='border border-gray-300 rounded-md p-2 shadow-sm'
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className='space-y-6 max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md'
+      >
+        <h2 className='text-2xl font-semibold text-gray-800 mb-6'>
+          Create New Follow-up
+        </h2>
+
+        <div className='space-y-4'>
+          <div className='flex items-center gap-2 text-gray-700'>
+            <span className='font-medium'>Send followup message to</span>
+            <FormField
+              control={form.control}
+              name='client'
+              render={({ field }) => (
+                <FormItem className='flex-1'>
+                  <ClientSelectionField
+                    selectedClient={field.value}
+                    setSelectedClient={field.onChange}
                   />
-                </div>
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        using agent
-        <FormField
-          control={form.control}
-          name='agent'
-          render={({ field }) => (
-            <FormItem>
-              <AgentSelectionField
-                selectedAgent={field.value}
-                setSelectedAgent={field.onChange}
-              />
-            </FormItem>
-          )}
-        />
-        with context
-        <FormField
-          control={form.control}
-          name='context'
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Textarea
-                  placeholder='Context'
-                  className='border border-gray-300 rounded-md p-2 shadow-sm'
-                  {...field}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <Button type='submit'>Submit</Button>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className='flex items-center gap-2 text-gray-700'>
+            <span className='font-medium'>on</span>
+            <FormField
+              control={form.control}
+              name='dateTime'
+              render={({ field }) => (
+                <FormItem className='flex-1'>
+                  <FormControl>
+                    <div>
+                      <DatePicker
+                        minDate={new Date()}
+                        selected={field.value}
+                        onChange={field.onChange}
+                        showTimeSelect
+                        dateFormat='Pp'
+                        className='w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                      />
+                    </div>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className='flex items-center gap-2 text-gray-700'>
+            <span className='font-medium'>using agent</span>
+            <FormField
+              control={form.control}
+              name='agent'
+              render={({ field }) => (
+                <FormItem className='flex-1'>
+                  <AgentSelectionField
+                    selectedAgent={field.value}
+                    setSelectedAgent={field.onChange}
+                  />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className='space-y-2'>
+            <label className='font-medium text-gray-700'>Context</label>
+            <FormField
+              control={form.control}
+              name='context'
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea
+                      placeholder='Enter the context for the follow-up...'
+                      className='w-full border border-gray-300 rounded-md p-3 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[120px]'
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <div className='pt-4'>
+          <Button
+            type='submit'
+            className='w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 cursor-pointer'
+          >
+            Create Follow-up
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -21,13 +21,22 @@ export const createFollowup = async (followup: {
       followupDate: followup.dateTime,
       status: 'SCHEDULED',
       messages: {
-        create: {
-          content: await getSystemPrompt(agent, followup.context),
-          role: 'SYSTEM',
-          channel: 'WHATSAPP',
-          contentType: 'TEXT',
-          createdAt: new Date(),
-        },
+        create: [
+          {
+            content: await getSystemPrompt(agent, followup.context),
+            role: 'system',
+            channel: 'WHATSAPP',
+            contentType: 'TEXT',
+            createdAt: new Date(),
+          },
+          {
+            content: `How can I help you today?`,
+            role: 'user',
+            channel: 'WHATSAPP',
+            contentType: 'TEXT',
+            createdAt: new Date(),
+          },
+        ],
       },
     },
   });
@@ -52,4 +61,15 @@ export const deleteFollowup = async (id: number) => {
     success: true,
     message: 'Followup deleted successfully',
   };
+};
+
+export const startFollowup = async (followupId: number) => {
+  const updatedFollowup = await prisma.followup.update({
+    where: { id: followupId },
+    data: {
+      status: 'IN_PROGRESS',
+    },
+  });
+
+  return updatedFollowup;
 };

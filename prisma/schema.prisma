@@ -82,6 +82,7 @@ model FollowupAuditTrail {
 enum FollowupStatus {
   DRAFT
   SCHEDULED
+  IN_PROGRESS
   COMPLETED
   FAILED
 }
@@ -94,7 +95,7 @@ model Message {
   followup    Followup    @relation(fields: [followupId], references: [id])
   contentType ContentType @default(TEXT)
   content     String
-  role        MessageRole @default(USER)
+  role        MessageRole @default(user)
   channel     Channel     @default(WHATSAPP)
 }
 
@@ -109,9 +110,10 @@ enum ContentType {
 }
 
 enum MessageRole {
-  USER
-  AGENT
-  SYSTEM
+  user
+  data
+  system
+  assistant
 }
 
 enum Channel {

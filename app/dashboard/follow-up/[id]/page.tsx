@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import { CollapsibleContext } from '@/components/collapsible-context';
+import { StartFollowupButton } from './StartFollowupButton';
 
 export default async function Page({ params }: { params: { id: string } }) {
   const followup = await prisma.followup.findUnique({
@@ -12,11 +13,11 @@ export default async function Page({ params }: { params: { id: string } }) {
       messages: {
         where: {
           role: {
-            not: 'SYSTEM',
+            not: 'system',
           },
         },
         orderBy: {
-          createdAt: 'desc',
+          createdAt: 'asc',
         },
       },
     },
@@ -41,6 +42,9 @@ export default async function Page({ params }: { params: { id: string } }) {
           <span className='px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium'>
             {followup.agent.name}
           </span>
+          <span className='px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium'>
+            {followup.status}
+          </span>
         </div>
         <div className='space-y-4'>
           <CollapsibleContext context={followup.context ?? ''} />
@@ -52,6 +56,7 @@ export default async function Page({ params }: { params: { id: string } }) {
               {followup.followupDate?.toLocaleString()}
             </p>
           </div>
+          <StartFollowupButton followup={followup} />
         </div>
       </div>
 
@@ -64,6 +69,9 @@ export default async function Page({ params }: { params: { id: string } }) {
               key={message.id}
               className='p-4 bg-gray-50 rounded-lg border border-gray-100'
             >
+              <p className='text-gray-700'>
+                {message.role}: {message.createdAt.toLocaleString()}
+              </p>
               <p className='text-gray-700'>{message.content}</p>
             </div>
           ))}
