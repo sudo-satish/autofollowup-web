@@ -16,14 +16,11 @@ bun dev
 
 TODO:
 
-- Select user
-- Select follow-up person
-- Select channel
-- Select follow-up datetime
-- Add context
-- Chat thread (Overview)
-- Status
-- Add channels in thread
+- Select commincation channel.
+- Add human assistance feature.
+- Add socket/sse for real time message
+- Add logger
+- Add conversation dump.
 
 Migrate prisma changes to DB
 
@@ -41,4 +38,10 @@ Run playground
 
 ```
  npx ts-node --compiler-options '{"module":"CommonJS"}' -r tsconfig-paths/register playground.ts
+```
+
+Start ngrok to recieve incoming messages;
+
+```
+ngrok http --url=prime-national-stinkbug.ngrok-free.app http://localhost:3000
 ```

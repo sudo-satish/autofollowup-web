@@ -2,10 +2,15 @@ import prisma from '@/lib/prisma';
 import { CollapsibleContext } from '@/components/collapsible-context';
 import { StartFollowupButton } from './StartFollowupButton';
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const followup = await prisma.followup.findUnique({
     where: {
-      id: parseInt(params.id),
+      id: parseInt(id),
     },
     include: {
       userClient: true,

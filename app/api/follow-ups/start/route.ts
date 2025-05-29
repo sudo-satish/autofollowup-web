@@ -1,18 +1,19 @@
-import { invokeAgent, generateFollowupMessages } from '@/services/agent';
-import { startFollowup } from '@/services/follow-up';
+import { initateAgentConversation } from '@/services/follow-up';
 
 export async function POST(request: Request) {
-  // Parse the request body
   const body = await request.json();
   const { followupId } = body;
 
-  //   const followup = await startFollowup(followupId);
+  await initateAgentConversation(+followupId);
 
-  const followup = await generateFollowupMessages(followupId);
-  const message = await invokeAgent(followup);
-
-  return new Response(JSON.stringify(message), {
-    status: 201,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: 'Followup started successfully',
+    }),
+    {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
 }

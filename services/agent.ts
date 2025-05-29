@@ -1,11 +1,9 @@
 import { openai } from '@ai-sdk/openai';
-import { generateText, generateObject, Message, tool } from 'ai';
+import { generateText, Message, tool } from 'ai';
 import { z } from 'zod';
-import { anthropic } from '@ai-sdk/anthropic';
 import { Followup } from '@/lib/generated/prisma';
 import prisma from '@/lib/prisma';
-
-const model = anthropic('claude-3-haiku-20240307');
+import { giggerAttendanceConfirmation, humanAssistance } from './tool';
 const chatGptmodel = openai('gpt-4-turbo');
 
 export const generateFollowupMessages = async (
@@ -30,35 +28,10 @@ export const invokeAgent = async (messages: Message[]) => {
     model: chatGptmodel,
     messages: messages,
     tools: {
-      giggerAttendanceConfirmation: tool({
-        description: 'Confirm attendance for a given shift in the DB.',
-        parameters: z.object({
-          gigger_id: z.string(),
-          booking_id: z.string(),
-          gigger_will_check_in: z.string(),
-          reason: z.string(),
-        }),
-        execute: async ({
-          gigger_id,
-          booking_id,
-          gigger_will_check_in,
-          reason,
-        }) => {
-          console.log({
-            gigger_id,
-            booking_id,
-            gigger_will_check_in,
-            reason,
-          });
-
-          return {
-            success: true,
-            message: 'Attendance confirmed',
-          };
-        },
-      }),
+      giggerAttendanceConfirmation,
+      humanAssistance,
     },
-    toolChoice: 'required',
+    toolChoice: 'auto',
     system: `
     You are a helpful assistant that generates followup messages for a given conversation. You have access to a tool to confirm attendance for giggers.
 

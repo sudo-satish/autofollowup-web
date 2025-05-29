@@ -51,18 +51,19 @@ model UserClient {
 }
 
 model Followup {
-  id           Int            @id @default(autoincrement())
-  userClientId Int
-  userClient   UserClient     @relation(fields: [userClientId], references: [id])
-  agentId      Int
-  agent        Agent          @relation(fields: [agentId], references: [id])
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  messages     Message[]
-  followupDate DateTime?
-  status       FollowupStatus @default(DRAFT)
-  context      String?
-  summary      String?
+  id              Int            @id @default(autoincrement())
+  userClientId    Int
+  userClient      UserClient     @relation(fields: [userClientId], references: [id])
+  agentId         Int
+  agent           Agent          @relation(fields: [agentId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  messages        Message[]
+  followupDate    DateTime?
+  status          FollowupStatus @default(DRAFT)
+  context         String?
+  summary         String?
+  conversationSid String?
 }
 
 model FollowupAuditTrail {

@@ -33,10 +33,6 @@ export const columns: ColumnDef<Followup>[] = [
     header: 'Followup Date & Time',
   },
   {
-    accessorKey: 'context',
-    header: 'Context',
-  },
-  {
     accessorKey: 'view',
     header: 'View',
     cell: ({ row }) => {
@@ -74,5 +70,9 @@ export const columns: ColumnDef<Followup>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
+  },
+  {
+    accessorKey: 'context',
+    header: 'Context',
   },
 ];
