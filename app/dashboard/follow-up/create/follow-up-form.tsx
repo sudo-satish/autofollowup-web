@@ -45,7 +45,8 @@ export function FollowUpForm() {
         toast.success('Followup created successfully');
         router.push('/dashboard/follow-up');
       } else {
-        toast.error('Failed to create followup');
+        const error = await response.json();
+        toast.error(error.title);
       }
     } catch (error) {
       toast.error('Failed to create followup');

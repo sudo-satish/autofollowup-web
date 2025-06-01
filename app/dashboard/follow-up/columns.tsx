@@ -1,13 +1,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { deleteFollowup } from '@/services/follow-up';
 import { Agent, UserClient } from '@/shared/types';
 import { ColumnDef } from '@tanstack/react-table';
 import { TrashIcon } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { ContextDialog } from './ContextDialog';
+import { formatDateTime } from '@/utils/date-time';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -31,6 +32,11 @@ export const columns: ColumnDef<Followup>[] = [
   {
     accessorKey: 'followupDate',
     header: 'Followup Date & Time',
+    cell: ({ row }) => {
+      return (
+        <div>{formatDateTime(row.original.followupDate ?? new Date())}</div>
+      );
+    },
   },
   {
     accessorKey: 'view',
@@ -73,6 +79,8 @@ export const columns: ColumnDef<Followup>[] = [
   },
   {
     accessorKey: 'context',
-    header: 'Context',
+    cell: ({ row }) => {
+      return <ContextDialog context={row.original.context ?? ''} />;
+    },
   },
 ];

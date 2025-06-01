@@ -14,6 +14,7 @@ import {
   sendSystemMessage,
   SYSTEM_CONTENT_SID_MAP,
 } from './twillio';
+import { ForbiddenError } from '@/utils/errors';
 
 export const createFollowup = async (followup: {
   dateTime: Date;
@@ -21,6 +22,16 @@ export const createFollowup = async (followup: {
   agent: string;
   context: string;
 }) => {
+  const existingFollowup = await prisma.followup.findFirst({
+    where: {
+      userClientId: +followup.client,
+    },
+  });
+
+  if (existingFollowup) {
+    throw new ForbiddenError('Followup already exists');
+  }
+
   const agent = await prisma.agent.findUniqueOrThrow({
     where: {
       id: +followup.agent,
@@ -73,6 +84,58 @@ export const initateAgentConversation = async (followupId: number) => {
   await persistFollowupMessage(followup, {
     content: textMessage,
     role: 'assistant',
+  });
+
+  await prisma.followup.update({
+    where: { id: followupId },
+    data: {
+      status: 'IN_PROGRESS',
+    },
+  });
+
+  if (textMessage && followup.conversationSid) {
+    await sendMessage({
+      message: textMessage,
+      conversationSid: followup.conversationSid,
+    });
+  }
+};
+export const resetFollowup = async (followupId: number) => {
+  const followup = await prisma.followup.findUniqueOrThrow({
+    where: {
+      id: followupId,
+    },
+  });
+
+  await prisma.message.deleteMany({
+    where: {
+      followupId,
+      role: {
+        not: 'system',
+      },
+    },
+  });
+
+  const initialMessage = await sendSystemMessageToConversation(followupId);
+
+  await persistFollowupMessage(followup, {
+    content: initialMessage,
+    role: 'assistant',
+  });
+
+  const messages = await generateFollowupMessages(followup);
+  const message = await invokeAgent(messages);
+  const textMessage = message.text;
+  await persistFollowupMessage(followup, {
+    content: textMessage,
+    role: 'assistant',
+  });
+
+  await prisma.followup.update({
+    where: { id: followupId },
+    data: {
+      status: 'IN_PROGRESS',
+    },
   });
 
   if (textMessage && followup.conversationSid) {
@@ -128,19 +191,21 @@ export const onUserMessage = async (
     role: 'user',
   });
 
-  const messages = await generateFollowupMessages(followup);
-  const message = await invokeAgent(messages);
-  const textMessage = message.text;
-  await persistFollowupMessage(followup, {
-    content: textMessage,
-    role: 'assistant',
-  });
-
-  if (textMessage && followup.conversationSid) {
-    await sendMessage({
-      message: textMessage,
-      conversationSid: followup.conversationSid,
+  // TODO: This should via debounce and not be called on every message
+  if (followup.isAutoMode) {
+    const messages = await generateFollowupMessages(followup);
+    const message = await invokeAgent(messages);
+    const textMessage = message.text;
+    await persistFollowupMessage(followup, {
+      content: textMessage,
+      role: 'assistant',
     });
+    if (textMessage && followup.conversationSid) {
+      await sendMessage({
+        message: textMessage,
+        conversationSid: followup.conversationSid,
+      });
+    }
   }
 };
 
@@ -180,17 +245,13 @@ export const createConversationParticipant = async (followupId: number) => {
 
   // Fetch conversation id by participant address
   // If not found create a new conversation
-  let conversation = await getConversationIdByParticipantAddress(address);
-
-  if (!conversation) {
-    conversation = await createConversation(
-      `${agent.name} - ${userClient.name}`
-    );
-    await createParticipants({
-      conversationSid: conversation.sid,
-      address,
-    });
-  }
+  const conversation = await createConversation(
+    `${agent.name} - ${userClient.name}`
+  );
+  await createParticipants({
+    conversationSid: conversation.sid,
+    address,
+  });
 
   await prisma.followup.update({
     where: { id: followupId },

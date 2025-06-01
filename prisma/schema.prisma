@@ -64,6 +64,7 @@ model Followup {
   context         String?
   summary         String?
   conversationSid String?
+  isAutoMode      Boolean        @default(true)
 }
 
 model FollowupAuditTrail {
@@ -123,4 +124,11 @@ enum Channel {
   SMS
   EMAIL
   OTHER
+}
+
+model AgentInvocationAuditTrail {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  messages  Json
+  response  Json
 }

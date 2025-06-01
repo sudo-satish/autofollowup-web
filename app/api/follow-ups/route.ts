@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import { createFollowup, deleteFollowup } from '@/services/follow-up';
+import { sendErrorResponse } from '@/utils/errors';
 
 export async function GET(request: Request) {
   // For example, fetch data from your DB here
@@ -15,17 +16,21 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { agent, client, context, dateTime } = body;
 
-  const followup = await createFollowup({
-    agent,
-    client,
-    context,
-    dateTime,
-  });
+  try {
+    const followup = await createFollowup({
+      agent,
+      client,
+      context,
+      dateTime,
+    });
 
-  return new Response(JSON.stringify(followup), {
-    status: 201,
-    headers: { 'Content-Type': 'application/json' },
-  });
+    return new Response(JSON.stringify(followup), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    return sendErrorResponse(error as Error);
+  }
 }
 
 export async function DELETE(request: Request) {

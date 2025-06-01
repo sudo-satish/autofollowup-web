@@ -23,7 +23,7 @@ export const generateFollowupMessages = async (
 };
 
 export const invokeAgent = async (messages: Message[]) => {
-  return generateText({
+  const response = await generateText({
     // model: model,
     model: chatGptmodel,
     messages: messages,
@@ -52,7 +52,18 @@ export const invokeAgent = async (messages: Message[]) => {
 
     Always use the tool when attendance needs to be confirmed, and provide clear responses to the user about the confirmation status.
     `,
+
+    experimental_telemetry: { isEnabled: true },
   });
+
+  await prisma.agentInvocationAuditTrail.create({
+    data: {
+      messages: messages as any,
+      response: response.response as any,
+    },
+  });
+
+  return response;
 };
 
 export const persistFollowupMessage = async (
