@@ -16,6 +16,10 @@ import {
 } from './twillio';
 import { ForbiddenError } from '@/utils/errors';
 
+const debounceTimers: Record<string, NodeJS.Timeout> = {};
+// Delay before responding (in milliseconds)
+const DEBOUNCE_DELAY = 3000;
+
 export const createFollowup = async (followup: {
   dateTime: Date;
   client: string;
@@ -77,6 +81,10 @@ export const initateAgentConversation = async (followupId: number) => {
     content: initialMessage,
     role: 'assistant',
   });
+  await persistFollowupMessage(followup, {
+    content: 'Hey there!',
+    role: 'user',
+  });
 
   const messages = await generateFollowupMessages(followup);
   const message = await invokeAgent(messages);
@@ -121,6 +129,10 @@ export const resetFollowup = async (followupId: number) => {
   await persistFollowupMessage(followup, {
     content: initialMessage,
     role: 'assistant',
+  });
+  await persistFollowupMessage(followup, {
+    content: 'Hey there!',
+    role: 'user',
   });
 
   const messages = await generateFollowupMessages(followup);
@@ -192,20 +204,33 @@ export const onUserMessage = async (
   });
 
   // TODO: This should via debounce and not be called on every message
-  if (followup.isAutoMode) {
-    const messages = await generateFollowupMessages(followup);
-    const message = await invokeAgent(messages);
-    const textMessage = message.text;
-    await persistFollowupMessage(followup, {
-      content: textMessage,
-      role: 'assistant',
-    });
-    if (textMessage && followup.conversationSid) {
-      await sendMessage({
-        message: textMessage,
-        conversationSid: followup.conversationSid,
-      });
+  if (followup.isAutoMode && followup.conversationSid) {
+    const conversationSid = followup.conversationSid;
+    // TODO: This should be called via debounce and not be called on every message
+
+    if (debounceTimers[conversationSid]) {
+      clearTimeout(debounceTimers[conversationSid]);
     }
+
+    // Set a new timer
+    debounceTimers[conversationSid] = setTimeout(async () => {
+      const messages = await generateFollowupMessages(followup);
+      const message = await invokeAgent(messages);
+      const textMessage = message.text;
+      await persistFollowupMessage(followup, {
+        content: textMessage,
+        role: 'assistant',
+      });
+      if (textMessage && followup.conversationSid) {
+        await sendMessage({
+          message: textMessage,
+          conversationSid: followup.conversationSid,
+        });
+      }
+
+      // Clean up
+      delete debounceTimers[conversationSid];
+    }, DEBOUNCE_DELAY);
   }
 };
 
@@ -283,11 +308,8 @@ export const sendSystemMessageToConversation = async (followupId: number) => {
       },
     });
 
-    console.log({ message });
-
     // TODO: replace it with message sent by the system
     const systemSentMessage = SYSTEM_CONTENT_SID_MAP['gigger-welcome'];
-
     return systemSentMessage;
   }
 

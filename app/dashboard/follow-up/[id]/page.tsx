@@ -92,9 +92,7 @@ export default async function Page({
             <Messages followupId={followup.id} />
           </div>
           <div className='fixed bottom-0 left-[16rem] right-0 max-w-4xl mx-auto px-6 pb-6'>
-            <div className='w-full p-2 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded shadow-xl bg-white'>
-              <MessageInput />
-            </div>
+            <MessageInput followup={followup} />
           </div>
         </div>
       </div>

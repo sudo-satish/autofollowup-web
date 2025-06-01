@@ -124,8 +124,11 @@ export const sendMessage = async ({
   message,
   conversationSid,
 }: SendMessageProps) => {
-  console.log({ accountSid, authToken });
-  return client.conversations.v1
-    .conversations(conversationSid)
-    .messages.create({ author: 'system', body: message });
+  if (message && conversationSid) {
+    return client.conversations.v1
+      .conversations(conversationSid)
+      .messages.create({ author: 'system', body: message });
+  }
+
+  return null;
 };
