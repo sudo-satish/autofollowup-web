@@ -15,17 +15,13 @@ datasource db {
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
-  createdAt   DateTime     @default(now())
-  email       String       @unique
-  name        String?
-  role        Role         @default(USER)
-  userClients UserClient[]
-}
-
-enum Role {
-  USER
-  ADMIN
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  email     String   @unique
+  name      String?
+  companyId Int
+  company   Company  @relation(fields: [companyId], references: [id])
+  clerkId   String   @unique
 }
 
 model Agent {
@@ -37,7 +33,7 @@ model Agent {
   systemPrompt            String
 }
 
-model UserClient {
+model Client {
   id                      Int                  @id @default(autoincrement())
   createdAt               DateTime             @default(now())
   name                    String
@@ -46,14 +42,14 @@ model UserClient {
   email                   String?
   conversations           Followup[]
   conversationAuditTrails FollowupAuditTrail[]
-  userId                  Int
-  user                    User                 @relation(fields: [userId], references: [id])
+  companyId               Int
+  company                 Company              @relation(fields: [companyId], references: [id])
 }
 
 model Followup {
   id              Int            @id @default(autoincrement())
-  userClientId    Int
-  userClient      UserClient     @relation(fields: [userClientId], references: [id])
+  clientId        Int
+  client          Client         @relation(fields: [clientId], references: [id])
   agentId         Int
   agent           Agent          @relation(fields: [agentId], references: [id])
   createdAt       DateTime       @default(now())
@@ -69,8 +65,8 @@ model Followup {
 
 model FollowupAuditTrail {
   id           Int            @id @default(autoincrement())
-  userClientId Int
-  userClient   UserClient     @relation(fields: [userClientId], references: [id])
+  clientId     Int
+  client       Client         @relation(fields: [clientId], references: [id])
   agentId      Int
   agent        Agent          @relation(fields: [agentId], references: [id])
   createdAt    DateTime       @default(now())
@@ -131,4 +127,16 @@ model AgentInvocationAuditTrail {
   createdAt DateTime @default(now())
   messages  Json
   response  Json
+}
+
+model Company {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  name        String
+  address     String?
+  website     String?
+  description String?
+  clerkId     String   @unique
+  User        User[]
+  Client      Client[]
 }

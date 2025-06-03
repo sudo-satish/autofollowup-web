@@ -11,6 +11,13 @@ export type Agent = {
   createdAt: Date;
 };
 
+export type Company = {
+  id: number;
+  name: string;
+  clerkId: string;
+  createdAt: Date;
+};
+
 export type UserClient = {
   id: number;
   name: string;

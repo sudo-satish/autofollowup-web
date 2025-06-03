@@ -24,7 +24,7 @@ const formSchema = z.object({
   mobileNumber: z.string().min(13, 'Mobile number should be with country code'),
 });
 
-export function ClientForm() {
+export function ClientForm({ companyId }: { companyId: number }) {
   const { userId } = useAuth();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -35,15 +35,11 @@ export function ClientForm() {
     },
   });
 
-  console.log({
-    userId,
-  });
-
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await fetch('/api/user-clients', {
-        body: JSON.stringify(values),
+      const response = await fetch('/api/clients', {
+        body: JSON.stringify({ ...values, companyId }),
         method: 'post',
       });
 

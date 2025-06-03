@@ -17,7 +17,7 @@ export default async function Layout({
 
   const isSuperAdmin = user.privateMetadata.role === 'super_admin';
 
-  if (isSuperAdmin) {
+  if (!isSuperAdmin) {
     return <Unauthorized />;
   }
   return (
