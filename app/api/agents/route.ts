@@ -12,13 +12,33 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   // Parse the request body
   const body = await request.json();
-  const { name } = body;
+  const { name, systemPrompt } = body;
 
   // e.g. Insert new user into your DB
-  const newUser = { id: Date.now(), name };
+  const newAgent = await prisma.agent.create({
+    data: {
+      name,
+      systemPrompt,
+    },
+  });
 
-  return new Response(JSON.stringify(newUser), {
+  return new Response(JSON.stringify(newAgent), {
     status: 201,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export async function PUT(request: Request) {
+  const body = await request.json();
+  const { id, name, systemPrompt } = body;
+
+  const updatedAgent = await prisma.agent.update({
+    where: { id },
+    data: { name, systemPrompt },
+  });
+
+  return new Response(JSON.stringify(updatedAgent), {
+    status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
 }
