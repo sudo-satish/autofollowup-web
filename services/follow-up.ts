@@ -9,7 +9,6 @@ import {
   createConversation,
   createParticipants,
   generateAddress,
-  getConversationIdByParticipantAddress,
   sendMessage,
   sendSystemMessage,
   SYSTEM_CONTENT_SID_MAP,
@@ -28,7 +27,7 @@ export const createFollowup = async (followup: {
 }) => {
   const existingFollowup = await prisma.followup.findFirst({
     where: {
-      userClientId: +followup.client,
+      clientId: +followup.client,
     },
   });
 
@@ -45,7 +44,7 @@ export const createFollowup = async (followup: {
   const newFollowup = await prisma.followup.create({
     data: {
       agentId: +followup.agent,
-      userClientId: +followup.client,
+      clientId: +followup.client,
       context: followup.context,
       followupDate: followup.dateTime,
       status: 'SCHEDULED',
@@ -258,30 +257,32 @@ export const createConversationParticipant = async (followupId: number) => {
     },
   });
 
-  const userClient = await prisma.userClient.findUniqueOrThrow({
+  const client = await prisma.client.findUniqueOrThrow({
     where: {
-      id: followup.userClientId,
+      id: followup.clientId,
     },
   });
 
-  const address = await generateAddress(
-    `${userClient.countryCode}${userClient.phone}`
-  );
+  const address = await generateAddress(`${client.countryCode}${client.phone}`);
 
   // Fetch conversation id by participant address
   // If not found create a new conversation
-  const conversation = await createConversation(
-    `${agent.name} - ${userClient.name}`
-  );
-  await createParticipants({
-    conversationSid: conversation.sid,
-    address,
-  });
+  // CH0c923f55b8ec4457b4fc0c00a632ddfd
+  // const conversation = await createConversation(
+  //   `${agent.name} - ${client.name}`
+  // );
+  // await createParticipants({
+  //   conversationSid: conversation.sid,
+  //   address,
+  // });
+
+  // const conversationSid = conversation.sid;
+  const conversationSid = 'CH0c923f55b8ec4457b4fc0c00a632ddfd';
 
   await prisma.followup.update({
     where: { id: followupId },
     data: {
-      conversationSid: conversation.sid,
+      conversationSid: conversationSid,
     },
   });
 };
@@ -293,9 +294,9 @@ export const sendSystemMessageToConversation = async (followupId: number) => {
     },
   });
 
-  const userClient = await prisma.userClient.findUniqueOrThrow({
+  const client = await prisma.client.findUniqueOrThrow({
     where: {
-      id: followup.userClientId,
+      id: followup.clientId,
     },
   });
 
@@ -304,7 +305,7 @@ export const sendSystemMessageToConversation = async (followupId: number) => {
       conversationSid: followup.conversationSid,
       contentSid: SYSTEM_CONTENT_SID_MAP['gigger-welcome'],
       contentVariables: {
-        '1': userClient.name,
+        '1': client.name,
       },
     });
 

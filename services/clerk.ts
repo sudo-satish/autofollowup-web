@@ -1,3 +1,4 @@
+import prisma from '@/lib/prisma';
 import { auth, clerkClient } from '@clerk/nextjs/server';
 
 export const getClerkClient = async () => {
@@ -13,6 +14,20 @@ export const getUser = async () => {
   const client = await getClerkClient();
   const user = await client.users.getUser(userId!);
   return user;
+};
+
+export const getUserCompanyId = async () => {
+  const user = await getUser();
+  const dbUser = await prisma.user.findUnique({
+    where: {
+      clerkId: user.id,
+    },
+  });
+  if (!dbUser) {
+    throw new Error('User not found');
+  }
+
+  return dbUser.companyId;
 };
 
 export const getUserMetadata = async () => {

@@ -18,31 +18,30 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { UserClient } from '@/shared/types';
+import { CountryCode } from '@/shared/types';
 
-export function ClientSelectionField({
-  selectedClient,
-  setSelectedClient,
-  companyId,
+const countryCodes: CountryCode[] = [
+  { id: '+91', name: 'India' },
+  { id: '+92', name: 'Australia' },
+  { id: '+93', name: 'Canada' },
+  { id: '+94', name: 'United States' },
+  { id: '+95', name: 'United Kingdom' },
+  { id: '+96', name: 'United Arab Emirates' },
+  { id: '+97', name: 'New Zealand' },
+];
+
+export function CountryCodeSelectionField({
+  selectedCountryCode,
+  setSelectedCountryCode,
 }: Readonly<{
-  selectedClient: string;
-  setSelectedClient: (value: string) => void;
-  companyId: number;
+  selectedCountryCode: string;
+  setSelectedCountryCode: (value: string) => void;
 }>) {
   const [open, setOpen] = React.useState(false);
-  const [clients, setClients] = React.useState<UserClient[]>([]);
-  const value = selectedClient;
-  const setValue = setSelectedClient;
 
-  React.useEffect(() => {
-    async function fetchAgents() {
-      const res = await fetch(`/api/clients?companyId=${companyId}`);
-      const agents = await res.json();
-      setClients(agents);
-    }
-
-    fetchAgents();
-  }, []);
+  const [countries, setCountries] = React.useState<CountryCode[]>(countryCodes);
+  const value = selectedCountryCode;
+  const setValue = setSelectedCountryCode;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -51,11 +50,11 @@ export function ClientSelectionField({
           variant='outline'
           role='combobox'
           aria-expanded={open}
-          className='w-[200px] justify-between'
+          className='justify-between'
         >
           {value
-            ? clients.find((client) => '' + client.id === value)?.name
-            : 'Select client...'}
+            ? countries.find((country) => country.id === value)?.name
+            : 'Select country...'}
           <ChevronsUpDown className='opacity-50' />
         </Button>
       </PopoverTrigger>
@@ -65,20 +64,20 @@ export function ClientSelectionField({
           <CommandList>
             <CommandEmpty>No client found.</CommandEmpty>
             <CommandGroup>
-              {clients.map((client) => (
+              {countries.map((country) => (
                 <CommandItem
-                  key={'' + client.id}
-                  value={'' + client.id}
+                  key={country.id}
+                  value={`${country.id}`}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? '' : currentValue);
                     setOpen(false);
                   }}
                 >
-                  {client.name}
+                  {country.id} {country.name}
                   <Check
                     className={cn(
                       'ml-auto',
-                      value === '' + client.id ? 'opacity-100' : 'opacity-0'
+                      value === country.id ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                 </CommandItem>

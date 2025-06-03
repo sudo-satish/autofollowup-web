@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Agent, UserClient } from '@/shared/types';
+import { Agent } from '@/shared/types';
 import { ColumnDef } from '@tanstack/react-table';
 import { TrashIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -9,12 +9,13 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { ContextDialog } from './ContextDialog';
 import { formatDateTime } from '@/utils/date-time';
+import { Client } from '@/lib/generated/prisma';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export type Followup = {
   id: number;
-  userClient: UserClient;
+  client: Client;
   agent: Agent;
   followupDate: Date | null;
   context: string | null;
@@ -22,7 +23,7 @@ export type Followup = {
 
 export const columns: ColumnDef<Followup>[] = [
   {
-    accessorKey: 'userClient.name',
+    accessorKey: 'client.name',
     header: 'Client',
   },
   {
@@ -38,9 +39,20 @@ export const columns: ColumnDef<Followup>[] = [
       );
     },
   },
+
+  {
+    accessorKey: 'status',
+    header: 'Status',
+  },
+  {
+    header: 'Context',
+    cell: ({ row }) => {
+      return <ContextDialog context={row.original.context ?? ''} />;
+    },
+  },
   {
     accessorKey: 'view',
-    header: 'View',
+    header: 'Actions',
     cell: ({ row }) => {
       const router = useRouter();
       return (
@@ -71,16 +83,6 @@ export const columns: ColumnDef<Followup>[] = [
           </Button>
         </div>
       );
-    },
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-  },
-  {
-    accessorKey: 'context',
-    cell: ({ row }) => {
-      return <ContextDialog context={row.original.context ?? ''} />;
     },
   },
 ];

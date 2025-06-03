@@ -11,7 +11,7 @@ export default async function Page() {
       createdAt: 'desc',
     },
     include: {
-      userClient: true,
+      client: true,
       agent: true,
     },
   });

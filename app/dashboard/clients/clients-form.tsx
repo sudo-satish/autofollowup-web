@@ -18,10 +18,12 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { CountryCodeSelectionField } from './country-code-selection-field';
 
 const formSchema = z.object({
   name: z.string().min(5, 'Name should be min 5 length'),
-  mobileNumber: z.string().min(13, 'Mobile number should be with country code'),
+  mobileNumber: z.string().min(10, 'Mobile number should be min 10 length'),
+  countryCode: z.string().min(1, 'Country code should be min 1 length'),
 });
 
 export function ClientForm({ companyId }: { companyId: number }) {
@@ -32,6 +34,7 @@ export function ClientForm({ companyId }: { companyId: number }) {
     defaultValues: {
       name: '',
       mobileNumber: '',
+      countryCode: '',
     },
   });
 
@@ -75,6 +78,21 @@ export function ClientForm({ companyId }: { companyId: number }) {
         />
         <FormField
           control={form.control}
+          name='countryCode'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Country code</FormLabel>
+              <FormControl>
+                <CountryCodeSelectionField
+                  selectedCountryCode={field.value}
+                  setSelectedCountryCode={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name='mobileNumber'
           render={({ field }) => (
             <FormItem>
@@ -83,12 +101,14 @@ export function ClientForm({ companyId }: { companyId: number }) {
                 <Input placeholder='Mobile number' {...field} />
               </FormControl>
               <FormDescription>
-                Mobile number with country e.g. +918130626713.
+                Mobile number with country e.g. 8130626713.
               </FormDescription>
             </FormItem>
           )}
         />
-        <Button type='submit'>Submit</Button>
+        <Button type='submit' className='cursor-pointer'>
+          Submit
+        </Button>
       </form>
     </Form>
   );

@@ -20,7 +20,7 @@ const formSchema = z.object({
   context: z.string(),
 });
 
-export function FollowUpForm() {
+export function FollowUpForm({ companyId }: { companyId: number }) {
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,6 +74,7 @@ export function FollowUpForm() {
                   <ClientSelectionField
                     selectedClient={field.value}
                     setSelectedClient={field.onChange}
+                    companyId={companyId}
                   />
                 </FormItem>
               )}

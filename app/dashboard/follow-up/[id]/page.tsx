@@ -18,7 +18,7 @@ export default async function Page({
       id: parseInt(id),
     },
     include: {
-      userClient: true,
+      client: true,
       agent: true,
       messages: {
         where: {
@@ -50,7 +50,7 @@ export default async function Page({
         <div className='bg-white rounded-lg shadow-md p-6'>
           <div className='flex items-center justify-between mb-4'>
             <h1 className='text-2xl font-bold text-gray-800'>
-              {followup.userClient.name}
+              {followup.client.name}
             </h1>
             <span className='px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium'>
               {followup.agent.name}

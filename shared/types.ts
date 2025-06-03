@@ -29,3 +29,8 @@ export type Followup = {
   followupDate: Date | null;
   context: string | null;
 };
+
+export type CountryCode = {
+  id: string;
+  name: string;
+};

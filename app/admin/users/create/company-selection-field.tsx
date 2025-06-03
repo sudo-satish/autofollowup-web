@@ -51,7 +51,7 @@ export function CompanySelectionField({
           variant='outline'
           role='combobox'
           aria-expanded={open}
-          className='w-[200px] justify-between'
+          className='justify-between'
         >
           {value
             ? companies.find((company) => company.id === value)?.name

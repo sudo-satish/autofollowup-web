@@ -1,25 +1,10 @@
 import PageLayout from '@/components/page-layout';
 import { ClientForm } from '../clients-form';
 import PageHeader from '@/components/page-header';
-import { auth } from '@clerk/nextjs/server';
-import prisma from '@/lib/prisma';
+import { getUserCompanyId } from '@/services/clerk';
 
 export default async function Page() {
-  const { orgId } = await auth();
-
-  if (!orgId) {
-    return <div>No organization found</div>;
-  }
-
-  const company = await prisma.company.findUnique({
-    where: {
-      clerkId: orgId,
-    },
-  });
-
-  if (!company) {
-    return <div>No company found</div>;
-  }
+  const companyId = await getUserCompanyId();
 
   return (
     <PageLayout>
@@ -30,7 +15,7 @@ export default async function Page() {
         showBackButton={true}
         backButtonHref='/dashboard/clients'
       />
-      <ClientForm companyId={company.id} />
+      <ClientForm companyId={companyId} />
     </PageLayout>
   );
 }
