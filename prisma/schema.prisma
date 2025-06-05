@@ -130,13 +130,47 @@ model AgentInvocationAuditTrail {
 }
 
 model Company {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  name        String
-  address     String?
-  website     String?
-  description String?
-  clerkId     String   @unique
-  User        User[]
-  Client      Client[]
+  id            Int             @id @default(autoincrement())
+  createdAt     DateTime        @default(now())
+  name          String
+  address       String?
+  website       String?
+  description   String?
+  clerkId       String          @unique
+  User          User[]
+  Client        Client[]
+  KnowledgeBase KnowledgeBase[]
+}
+
+enum KnowledgeBaseType {
+  LINK
+  WEBSITE
+  PDF
+  DOCUMENT
+  EXCEL
+  PPT
+  IMAGE
+  VIDEO
+  TEXT
+  OTHER
+}
+
+model KnowledgeBase {
+  id        Int               @id @default(autoincrement())
+  createdAt DateTime          @default(now())
+  title     String
+  content   String
+  type      KnowledgeBaseType
+  companyId Int
+  company   Company           @relation(fields: [companyId], references: [id])
+  url       String?
+  files     File[]
+}
+
+model File {
+  id              Int           @id @default(autoincrement())
+  createdAt       DateTime      @default(now())
+  url             String
+  knowledgeBaseId Int
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id])
 }

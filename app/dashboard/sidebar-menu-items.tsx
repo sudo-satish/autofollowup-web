@@ -1,7 +1,14 @@
 'use client';
 
 import { MenuItem } from '@/shared/types';
-import { HelpCircle, Home, MessageCircleMore, Users } from 'lucide-react';
+import {
+  Book,
+  BookOpen,
+  HelpCircle,
+  Home,
+  MessageCircleMore,
+  Users,
+} from 'lucide-react';
 
 // Menu items.
 export const items: MenuItem[] = [
@@ -19,6 +26,11 @@ export const items: MenuItem[] = [
     title: 'Clients',
     url: '/dashboard/clients',
     icon: <Users />,
+  },
+  {
+    title: 'Knowledge Base',
+    url: '/dashboard/knowledge-base',
+    icon: <BookOpen />,
   },
   {
     title: 'Help',

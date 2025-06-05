@@ -16,10 +16,6 @@ export default async function Page() {
     },
   });
 
-  console.log({
-    data,
-  });
-
   return (
     <div>
       <div className='container mx-auto py-10'>
