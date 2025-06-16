@@ -14,6 +14,7 @@ import {
   SYSTEM_CONTENT_SID_MAP,
 } from './twillio';
 import { ForbiddenError } from '@/utils/errors';
+import redis from './redis';
 
 const debounceTimers: Record<string, NodeJS.Timeout> = {};
 // Delay before responding (in milliseconds)
@@ -80,32 +81,28 @@ export const initateAgentConversation = async (followupId: number) => {
     content: initialMessage,
     role: 'assistant',
   });
-  await persistFollowupMessage(followup, {
-    content: 'Hey there!',
-    role: 'user',
-  });
 
-  const messages = await generateFollowupMessages(followup);
-  const message = await invokeAgent(messages);
-  const textMessage = message.text;
-  await persistFollowupMessage(followup, {
-    content: textMessage,
-    role: 'assistant',
-  });
+  // const messages = await generateFollowupMessages(followup);
+  // const message = await invokeAgent(messages);
+  // const textMessage = message.text;
+  // await persistFollowupMessage(followup, {
+  //   content: textMessage,
+  //   role: 'assistant',
+  // });
 
-  await prisma.followup.update({
-    where: { id: followupId },
-    data: {
-      status: 'IN_PROGRESS',
-    },
-  });
+  // await prisma.followup.update({
+  //   where: { id: followupId },
+  //   data: {
+  //     status: 'IN_PROGRESS',
+  //   },
+  // });
 
-  if (textMessage && followup.conversationSid) {
-    await sendMessage({
-      message: textMessage,
-      conversationSid: followup.conversationSid,
-    });
-  }
+  // if (textMessage && followup.conversationSid) {
+  //   await sendMessage({
+  //     message: textMessage,
+  //     conversationSid: followup.conversationSid,
+  //   });
+  // }
 };
 export const resetFollowup = async (followupId: number) => {
   const followup = await prisma.followup.findUniqueOrThrow({
@@ -123,38 +120,51 @@ export const resetFollowup = async (followupId: number) => {
     },
   });
 
-  const initialMessage = await sendSystemMessageToConversation(followupId);
+  // const initialMessage = await sendSystemMessageToConversation(followupId);
 
-  await persistFollowupMessage(followup, {
-    content: initialMessage,
-    role: 'assistant',
-  });
-  await persistFollowupMessage(followup, {
-    content: 'Hey there!',
-    role: 'user',
-  });
-
-  const messages = await generateFollowupMessages(followup);
-  const message = await invokeAgent(messages);
-  const textMessage = message.text;
-  await persistFollowupMessage(followup, {
-    content: textMessage,
-    role: 'assistant',
-  });
-
-  await prisma.followup.update({
-    where: { id: followupId },
-    data: {
-      status: 'IN_PROGRESS',
+  const client = await prisma.client.findUniqueOrThrow({
+    where: {
+      id: followup.clientId,
     },
   });
 
-  if (textMessage && followup.conversationSid) {
-    await sendMessage({
-      message: textMessage,
-      conversationSid: followup.conversationSid,
-    });
-  }
+  const initialMessage = `Hello ${client.name}, how can I help you today?`;
+
+  // await persistFollowupMessage(followup, {
+  //   content: initialMessage,
+  //   role: 'assistant',
+  // });
+
+  redis.publish(
+    'whatsapp.send-message',
+    JSON.stringify({
+      companyId: client.companyId,
+      message: initialMessage,
+      to: `${client.countryCode.replace('+', '')}${client.phone}@c.us`,
+    })
+  );
+
+  // const messages = await generateFollowupMessages(followup);
+  // const message = await invokeAgent(messages);
+  // const textMessage = message.text;
+  // await persistFollowupMessage(followup, {
+  //   content: textMessage,
+  //   role: 'assistant',
+  // });
+
+  // await prisma.followup.update({
+  //   where: { id: followupId },
+  //   data: {
+  //     status: 'IN_PROGRESS',
+  //   },
+  // });
+
+  // if (textMessage && followup.conversationSid) {
+  //   await sendMessage({
+  //     message: textMessage,
+  //     conversationSid: followup.conversationSid,
+  //   });
+  // }
 };
 
 export const deleteFollowup = async (id: number) => {
@@ -268,16 +278,16 @@ export const createConversationParticipant = async (followupId: number) => {
   // Fetch conversation id by participant address
   // If not found create a new conversation
   // CH0c923f55b8ec4457b4fc0c00a632ddfd
-  // const conversation = await createConversation(
-  //   `${agent.name} - ${client.name}`
-  // );
-  // await createParticipants({
-  //   conversationSid: conversation.sid,
-  //   address,
-  // });
+  const conversation = await createConversation(
+    `${agent.name} - ${client.name}`
+  );
+  await createParticipants({
+    conversationSid: conversation.sid,
+    address,
+  });
 
-  // const conversationSid = conversation.sid;
-  const conversationSid = 'CH0c923f55b8ec4457b4fc0c00a632ddfd';
+  const conversationSid = conversation.sid;
+  // const conversationSid = 'CH0c923f55b8ec4457b4fc0c00a632ddfd';
 
   await prisma.followup.update({
     where: { id: followupId },
@@ -301,16 +311,23 @@ export const sendSystemMessageToConversation = async (followupId: number) => {
   });
 
   if (followup.conversationSid) {
-    const message = await sendSystemMessage({
+    const payload = {
       conversationSid: followup.conversationSid,
-      contentSid: SYSTEM_CONTENT_SID_MAP['gigger-welcome'],
+      contentSid: SYSTEM_CONTENT_SID_MAP.initialMessage.sid,
       contentVariables: {
-        '1': client.name,
+        name: client.name,
       },
-    });
+    };
+    const response = await sendSystemMessage(payload);
+
+    console.log({ response });
 
     // TODO: replace it with message sent by the system
-    const systemSentMessage = SYSTEM_CONTENT_SID_MAP['gigger-welcome'];
+    const systemSentMessage =
+      SYSTEM_CONTENT_SID_MAP.initialMessage.template.replace(
+        '{{name}}',
+        client.name
+      );
     return systemSentMessage;
   }
 

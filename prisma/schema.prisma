@@ -130,16 +130,17 @@ model AgentInvocationAuditTrail {
 }
 
 model Company {
-  id            Int             @id @default(autoincrement())
-  createdAt     DateTime        @default(now())
-  name          String
-  address       String?
-  website       String?
-  description   String?
-  clerkId       String          @unique
-  User          User[]
-  Client        Client[]
-  KnowledgeBase KnowledgeBase[]
+  id                 Int                  @id @default(autoincrement())
+  createdAt          DateTime             @default(now())
+  name               String
+  address            String?
+  website            String?
+  description        String?
+  clerkId            String               @unique
+  User               User[]
+  Client             Client[]
+  KnowledgeBase      KnowledgeBase[]
+  WhatsappConnection WhatsappConnection[]
 }
 
 enum KnowledgeBaseType {
@@ -173,4 +174,13 @@ model File {
   url             String
   knowledgeBaseId Int
   knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id])
+}
+
+model WhatsappConnection {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  companyId   Int
+  company     Company  @relation(fields: [companyId], references: [id])
+  isConnected Boolean  @default(false)
 }

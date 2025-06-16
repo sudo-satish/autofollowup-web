@@ -1,6 +1,9 @@
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import Unauthorized from '@/components/unauthorized';
+import prisma from '@/lib/prisma';
+import WhatsappQRCode from './components/WhatsappQRCode';
+import { SocketProvider } from '@/components/socket';
 
 export default async function Page() {
   const { userId, has, ...rest } = await auth();
@@ -17,10 +20,35 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
+  console.log(rest.orgId);
+
+  const company = await prisma.company.findFirst({
+    where: {
+      clerkId: rest.orgId!,
+    },
+    include: {
+      WhatsappConnection: true,
+    },
+  });
+
+  const whatsappConnection = await prisma.whatsappConnection.findFirst({
+    where: {
+      companyId: company?.id,
+    },
+  });
+
+  console.log({ whatsappConnection });
+
   console.log(rest, user.privateMetadata);
   return (
     <div>
       <h1>Dashboard</h1>
+
+      {!whatsappConnection && company?.id && (
+        <SocketProvider>
+          <WhatsappQRCode companyId={company.id.toString()} />
+        </SocketProvider>
+      )}
     </div>
   );
 }

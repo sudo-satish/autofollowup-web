@@ -1,3 +1,5 @@
+# FollowAI.in
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -16,11 +18,11 @@ bun dev
 
 TODO:
 
-- Select commincation channel.
-- Add human assistance feature.
-- Add socket/sse for real time message
-- Add logger
-- Add conversation dump.
+- Add socket.io
+- Add redis
+- Connect to whatsappweb
+- Present QR code
+- Send and recieve message via whatsapp web.
 
 Migrate prisma changes to DB
 

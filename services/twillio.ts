@@ -3,6 +3,8 @@ const authToken = process.env.TWILLIO_AUTH_TOKEN;
 
 const client = require('twilio')(accountSid, authToken);
 
+const proxyAddress = 'whatsapp:+919205644495';
+
 // Save conversation.sid in the DB.
 export const createConversation = async (friendlyName: string) => {
   const conversation = await client.conversations.v1.conversations.create({
@@ -47,7 +49,7 @@ export const createParticipants = async ({
     .conversations(conversationSid)
     .participants.create({
       'messagingBinding.address': address,
-      'messagingBinding.proxyAddress': 'whatsapp:+14155238886', // TODO: Replace it with the proxy address
+      'messagingBinding.proxyAddress': proxyAddress,
     });
 };
 
@@ -66,7 +68,10 @@ export const getConversationIdByParticipantAddress = async (
 };
 
 export const SYSTEM_CONTENT_SID_MAP = {
-  'gigger-welcome': 'CH7824133457334cf489f61541694463dd',
+  initialMessage: {
+    sid: 'HXceca2ce6ad7dabef41b2c9da7d945045',
+    template: `Hey {{name}}! How you doing today?`,
+  },
 };
 /**
  * Send a system message to the conversation.
@@ -96,9 +101,17 @@ export const sendSystemMessage = async ({
   return client.conversations.v1
     .conversations(conversationSid)
     .messages.create({
-      author: 'system',
-      ContentSid: contentSid,
-      ContentVariables: JSON.stringify(contentVariables),
+      author: 'whatsapp:+919205644495',
+      contentSid: contentSid,
+      contentVariables: JSON.stringify({ name: 'Satish' }),
+      // 'messagingBinding.proxyAddress': proxyAddress,
+      // author: 'system',
+      // body: SYSTEM_CONTENT_SID_MAP.initialMessage.template.replace(
+      //   '{{name}}',
+      //   contentVariables.name
+      // ),
+      // ContentSid: contentSid,
+      // ContentVariables: JSON.stringify(contentVariables),
     });
 };
 
