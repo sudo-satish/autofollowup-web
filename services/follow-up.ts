@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import prisma from '../lib/prisma';
 import { getSystemPrompt } from './prompt';
 import {
   generateFollowupMessages,
@@ -9,12 +9,13 @@ import {
   createConversation,
   createParticipants,
   generateAddress,
-  sendMessage,
   sendSystemMessage,
   SYSTEM_CONTENT_SID_MAP,
 } from './twillio';
-import { ForbiddenError } from '@/utils/errors';
+import { ForbiddenError } from '../utils/errors';
 import redis from './redis';
+import { sendMessage } from './whatsapp';
+import { User } from '@/lib/generated/prisma';
 
 const debounceTimers: Record<string, NodeJS.Timeout> = {};
 // Delay before responding (in milliseconds)
@@ -25,6 +26,7 @@ export const createFollowup = async (followup: {
   client: string;
   agent: string;
   context: string;
+  user: User;
 }) => {
   const existingFollowup = await prisma.followup.findFirst({
     where: {
@@ -49,6 +51,7 @@ export const createFollowup = async (followup: {
       context: followup.context,
       followupDate: followup.dateTime,
       status: 'SCHEDULED',
+      companyId: followup.user.companyId,
       messages: {
         create: [
           {
@@ -75,34 +78,27 @@ export const initateAgentConversation = async (followupId: number) => {
     },
   });
 
-  const initialMessage = await sendSystemMessageToConversation(followupId);
+  const client = await prisma.client.findUniqueOrThrow({
+    where: {
+      id: followup.clientId,
+    },
+  });
+
+  const initialMessage = `Hello ${client.name}, how can I help you today?`;
+
+  redis.publish(
+    'whatsapp.send-message',
+    JSON.stringify({
+      companyId: client.companyId,
+      message: initialMessage,
+      to: `${client.countryCode.replace('+', '')}${client.phone}@c.us`,
+    })
+  );
 
   await persistFollowupMessage(followup, {
     content: initialMessage,
     role: 'assistant',
   });
-
-  // const messages = await generateFollowupMessages(followup);
-  // const message = await invokeAgent(messages);
-  // const textMessage = message.text;
-  // await persistFollowupMessage(followup, {
-  //   content: textMessage,
-  //   role: 'assistant',
-  // });
-
-  // await prisma.followup.update({
-  //   where: { id: followupId },
-  //   data: {
-  //     status: 'IN_PROGRESS',
-  //   },
-  // });
-
-  // if (textMessage && followup.conversationSid) {
-  //   await sendMessage({
-  //     message: textMessage,
-  //     conversationSid: followup.conversationSid,
-  //   });
-  // }
 };
 export const resetFollowup = async (followupId: number) => {
   const followup = await prisma.followup.findUniqueOrThrow({
@@ -130,11 +126,6 @@ export const resetFollowup = async (followupId: number) => {
 
   const initialMessage = `Hello ${client.name}, how can I help you today?`;
 
-  // await persistFollowupMessage(followup, {
-  //   content: initialMessage,
-  //   role: 'assistant',
-  // });
-
   redis.publish(
     'whatsapp.send-message',
     JSON.stringify({
@@ -143,6 +134,11 @@ export const resetFollowup = async (followupId: number) => {
       to: `${client.countryCode.replace('+', '')}${client.phone}@c.us`,
     })
   );
+
+  await persistFollowupMessage(followup, {
+    content: initialMessage,
+    role: 'assistant',
+  });
 
   // const messages = await generateFollowupMessages(followup);
   // const message = await invokeAgent(messages);
@@ -213,16 +209,15 @@ export const onUserMessage = async (
   });
 
   // TODO: This should via debounce and not be called on every message
-  if (followup.isAutoMode && followup.conversationSid) {
-    const conversationSid = followup.conversationSid;
+  if (followup.isAutoMode) {
     // TODO: This should be called via debounce and not be called on every message
 
-    if (debounceTimers[conversationSid]) {
-      clearTimeout(debounceTimers[conversationSid]);
+    if (debounceTimers[followup.id]) {
+      clearTimeout(debounceTimers[followup.id]);
     }
 
     // Set a new timer
-    debounceTimers[conversationSid] = setTimeout(async () => {
+    debounceTimers[followup.id] = setTimeout(async () => {
       const messages = await generateFollowupMessages(followup);
       const message = await invokeAgent(messages);
       const textMessage = message.text;
@@ -230,15 +225,15 @@ export const onUserMessage = async (
         content: textMessage,
         role: 'assistant',
       });
-      if (textMessage && followup.conversationSid) {
+      if (textMessage && followup) {
         await sendMessage({
           message: textMessage,
-          conversationSid: followup.conversationSid,
+          followup,
         });
       }
 
       // Clean up
-      delete debounceTimers[conversationSid];
+      delete debounceTimers[followup.id];
     }, DEBOUNCE_DELAY);
   }
 };
@@ -332,4 +327,39 @@ export const sendSystemMessageToConversation = async (followupId: number) => {
   }
 
   throw new Error('Conversation not found');
+};
+
+const getFollowupByWhatsappMessage = async (message: any) => {
+  const { from } = message;
+  // conevert 918130626713@c.us t0 8130626713
+  const number = from.substring(2).replace('@c.us', '');
+
+  const client = await prisma.client.findFirst({
+    where: {
+      phone: number,
+    },
+  });
+
+  if (!client) {
+    return null;
+  }
+
+  const followup = await prisma.followup.findFirst({
+    where: {
+      clientId: client.id,
+    },
+  });
+
+  return followup;
+};
+
+export const onWhatsappMessage = async (message: any) => {
+  const { type, fromMe } = message;
+  if (type !== 'chat' || !message.body || fromMe) {
+    return;
+  }
+  const followup = await getFollowupByWhatsappMessage(message);
+  if (followup) {
+    await onUserMessage(followup.id, message.body);
+  }
 };

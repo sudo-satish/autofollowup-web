@@ -5,13 +5,21 @@ import { Server } from 'socket.io';
 import { parse } from 'url';
 import { bindSocketEvents } from './services/socketio';
 import redis from './services/redis';
+import Message from './mongo/models/message';
+import connectDB from './mongo/db';
+import { onWhatsappMessage } from './services/follow-up';
+import prisma from './lib/prisma';
 
 const port = parseInt(process.env.PORT || '3000', 10);
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-redis.connect();
+redis.connect().then(() => {
+  console.log('Connected to Redis');
+});
+
+connectDB();
 
 app.prepare().then(() => {
   const httpServer = createServer((req, res) => {
@@ -27,6 +35,21 @@ app.prepare().then(() => {
     transports: ['websocket', 'polling'],
     allowEIO3: true,
     path: '/api/socket',
+  });
+
+  redis.subscribe('whatsapp.message_create', async (message) => {
+    try {
+      if (message) {
+        console.log('whatsapp-message-created', message);
+        const messageData = JSON.parse(message);
+        const messageDoc = await Message.create({ message: messageData });
+        // socket.emit('whatsapp-message-created', messageDoc.toObject());
+
+        await onWhatsappMessage(messageData);
+      }
+    } catch (error) {
+      console.error('whatsapp-message-created', error);
+    }
   });
 
   io.on('connection', (socket) => {
@@ -47,14 +70,10 @@ app.prepare().then(() => {
       socket.emit('whatsapp-qr-code-connected', JSON.parse(message));
     });
 
-    redis.subscribe('whatsapp.disconnected', (message) => {
+    redis.subscribe('whatsapp.disconnected', async (message) => {
       console.log('whatsapp-qr-code-disconnected', message);
-      socket.emit('whatsapp-qr-code-disconnected', JSON.parse(message));
-    });
 
-    redis.subscribe('whatsapp.message_create', (message) => {
-      console.log('whatsapp-message-created', message);
-      socket.emit('whatsapp-message-created', JSON.parse(message));
+      socket.emit('whatsapp-qr-code-disconnected', JSON.parse(message));
     });
 
     // bindSocketEvents(socket);

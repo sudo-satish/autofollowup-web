@@ -15,11 +15,12 @@ export const Messages = ({ followupId }: { followupId: number }) => {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchMessages();
-    }, 5000);
+    fetchMessages();
+    // const interval = setInterval(() => {
+    //   fetchMessages();
+    // }, 5000);
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, []);
 
   return (

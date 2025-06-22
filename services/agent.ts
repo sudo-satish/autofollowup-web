@@ -1,8 +1,8 @@
 import { openai } from '@ai-sdk/openai';
 import { google } from '@ai-sdk/google';
 import { generateText, Message } from 'ai';
-import { Followup } from '@/lib/generated/prisma';
-import prisma from '@/lib/prisma';
+import { Followup } from '../lib/generated/prisma';
+import prisma from '../lib/prisma';
 import { giggerAttendanceConfirmation, humanAssistance } from './tool';
 // const chatGptmodel = openai('gpt-4-turbo');
 const googleModel = google('gemini-2.5-pro-preview-05-06');

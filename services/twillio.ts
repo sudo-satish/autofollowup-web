@@ -1,3 +1,6 @@
+import { Followup } from '@/shared/types';
+import redis from './redis';
+
 const accountSid = process.env.TWILLIO_ACCOUNT_SID;
 const authToken = process.env.TWILLIO_AUTH_TOKEN;
 
@@ -117,7 +120,7 @@ export const sendSystemMessage = async ({
 
 interface SendMessageProps {
   message: string;
-  conversationSid: string;
+  followup: Followup;
 }
 
 /**
@@ -133,14 +136,16 @@ interface SendMessageProps {
  *
  * Save message.sid in the DB
  */
-export const sendMessage = async ({
-  message,
-  conversationSid,
-}: SendMessageProps) => {
-  if (message && conversationSid) {
-    return client.conversations.v1
-      .conversations(conversationSid)
-      .messages.create({ author: 'system', body: message });
+export const sendMessage = async ({ message, followup }: SendMessageProps) => {
+  if (message && followup) {
+    const to = '918130626713@c.us';
+    redis.publish(
+      'whatsapp.send-message',
+      JSON.stringify({
+        to,
+        message,
+      })
+    );
   }
 
   return null;

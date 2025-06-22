@@ -61,6 +61,8 @@ model Followup {
   summary         String?
   conversationSid String?
   isAutoMode      Boolean        @default(true)
+  companyId       Int
+  company         Company        @relation(fields: [companyId], references: [id])
 }
 
 model FollowupAuditTrail {
@@ -141,6 +143,7 @@ model Company {
   Client             Client[]
   KnowledgeBase      KnowledgeBase[]
   WhatsappConnection WhatsappConnection[]
+  Followup           Followup[]
 }
 
 enum KnowledgeBaseType {
