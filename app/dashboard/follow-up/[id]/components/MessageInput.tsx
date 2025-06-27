@@ -19,7 +19,6 @@ export const MessageInput = ({ followup }: { followup: Followup }) => {
       body: JSON.stringify({ message: input }),
     });
     setInput('');
-    console.log(input, followup);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

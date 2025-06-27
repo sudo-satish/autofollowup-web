@@ -8,8 +8,6 @@ export async function PUT(
   const body = await request.json();
   const { isAutoMode } = body;
 
-  console.log({ id, isAutoMode });
-
   const followup = await prisma.followup.update({
     where: { id: parseInt(id) },
     data: { isAutoMode },

@@ -25,7 +25,7 @@ export function AppSidebar({ items }: { items: MenuItem[] }) {
               className='data-[slot=sidebar-menu-button]:!p-1.5'
             >
               <a href='#'>
-                <span className='text-base font-semibold'>Magic Brush</span>
+                <span className='text-base font-semibold'>Fastco</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

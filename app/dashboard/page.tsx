@@ -20,8 +20,6 @@ export default async function Page() {
     return <Unauthorized />;
   }
 
-  console.log(rest.orgId);
-
   const company = await prisma.company.findFirst({
     where: {
       clerkId: rest.orgId!,
@@ -37,9 +35,6 @@ export default async function Page() {
     },
   });
 
-  console.log({ whatsappConnection });
-
-  console.log(rest, user.privateMetadata);
   return (
     <div>
       <h1>Dashboard</h1>

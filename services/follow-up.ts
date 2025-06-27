@@ -212,29 +212,29 @@ export const onUserMessage = async (
   if (followup.isAutoMode) {
     // TODO: This should be called via debounce and not be called on every message
 
-    if (debounceTimers[followup.id]) {
-      clearTimeout(debounceTimers[followup.id]);
-    }
+    // if (debounceTimers[followup.id]) {
+    //   clearTimeout(debounceTimers[followup.id]);
+    // }
 
     // Set a new timer
-    debounceTimers[followup.id] = setTimeout(async () => {
-      const messages = await generateFollowupMessages(followup);
-      const message = await invokeAgent(messages);
-      const textMessage = message.text;
-      await persistFollowupMessage(followup, {
-        content: textMessage,
-        role: 'assistant',
+    // debounceTimers[followup.id] = setTimeout(async () => {
+    const messages = await generateFollowupMessages(followup);
+    const message = await invokeAgent(messages);
+    const textMessage = message.text;
+    await persistFollowupMessage(followup, {
+      content: textMessage,
+      role: 'assistant',
+    });
+    if (textMessage && followup) {
+      await sendMessage({
+        message: textMessage,
+        followup,
       });
-      if (textMessage && followup) {
-        await sendMessage({
-          message: textMessage,
-          followup,
-        });
-      }
+    }
 
-      // Clean up
-      delete debounceTimers[followup.id];
-    }, DEBOUNCE_DELAY);
+    // Clean up
+    //     delete debounceTimers[followup.id];
+    //   }, DEBOUNCE_DELAY);
   }
 };
 
@@ -249,7 +249,6 @@ export const getFollowupByConversationSid = async (conversationSid: string) => {
 };
 
 export const createConversationParticipant = async (followupId: number) => {
-  console.log({ followupId });
   const followup = await prisma.followup.findUniqueOrThrow({
     where: {
       id: followupId,
@@ -273,16 +272,16 @@ export const createConversationParticipant = async (followupId: number) => {
   // Fetch conversation id by participant address
   // If not found create a new conversation
   // CH0c923f55b8ec4457b4fc0c00a632ddfd
-  const conversation = await createConversation(
-    `${agent.name} - ${client.name}`
-  );
-  await createParticipants({
-    conversationSid: conversation.sid,
-    address,
-  });
+  // const conversation = await createConversation(
+  //   `${agent.name} - ${client.name}`
+  // );
+  // await createParticipants({
+  //   conversationSid: conversation.sid,
+  //   address,
+  // });
 
-  const conversationSid = conversation.sid;
-  // const conversationSid = 'CH0c923f55b8ec4457b4fc0c00a632ddfd';
+  // const conversationSid = conversation.sid;
+  const conversationSid = 'CH0c923f55b8ec4457b4fc0c00a632ddfd';
 
   await prisma.followup.update({
     where: { id: followupId },
@@ -314,8 +313,6 @@ export const sendSystemMessageToConversation = async (followupId: number) => {
       },
     };
     const response = await sendSystemMessage(payload);
-
-    console.log({ response });
 
     // TODO: replace it with message sent by the system
     const systemSentMessage =

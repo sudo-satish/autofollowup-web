@@ -40,11 +40,9 @@ app.prepare().then(() => {
   redis.subscribe('whatsapp.message_create', async (message) => {
     try {
       if (message) {
-        console.log('whatsapp-message-created', message);
+        // console.log('whatsapp.message_create', message);
         const messageData = JSON.parse(message);
         const messageDoc = await Message.create({ message: messageData });
-        // socket.emit('whatsapp-message-created', messageDoc.toObject());
-
         await onWhatsappMessage(messageData);
       }
     } catch (error) {
@@ -56,23 +54,18 @@ app.prepare().then(() => {
     console.log('a user connected');
 
     socket.on('generate-whatsapp-qr-code', (data: { companyId: string }) => {
-      console.log('generate-whatsapp-qr-code', data);
       redis.publish('generate-whatsapp-qr-code', JSON.stringify(data));
     });
 
-    redis.subscribe('whatsapp-qr-code-generated', (message) => {
-      console.log('whatsapp-qr-code-generated', message);
+    redis.subscribe('whatsapp:qr', (message) => {
       socket.emit('whatsapp-qr-code-generated', JSON.parse(message));
     });
 
-    redis.subscribe('whatsapp.ready', (message) => {
-      console.log('whatsapp-qr-code-connected', message);
+    redis.subscribe('whatsapp:ready', (message) => {
       socket.emit('whatsapp-qr-code-connected', JSON.parse(message));
     });
 
     redis.subscribe('whatsapp.disconnected', async (message) => {
-      console.log('whatsapp-qr-code-disconnected', message);
-
       socket.emit('whatsapp-qr-code-disconnected', JSON.parse(message));
     });
 

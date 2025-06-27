@@ -36,8 +36,6 @@ export function CompanySelectionField({
     async function fetchCompanies() {
       const res = await fetch('/api/companies');
       const companies = await res.json();
-      console.log(companies);
-
       setCompanies(companies);
     }
 

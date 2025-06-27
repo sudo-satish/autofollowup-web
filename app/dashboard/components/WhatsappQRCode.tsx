@@ -22,7 +22,6 @@ export default function WhatsappQRCode({ companyId }: { companyId: string }) {
     setStatus('connecting');
 
     socket.on('connect', () => {
-      console.log('connected', companyId);
       setError(null);
       socket.emit('generate-whatsapp-qr-code', { companyId });
     });

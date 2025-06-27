@@ -1,4 +1,4 @@
-import { PrismaClient } from "../lib/generated/prisma/client";
+import { PrismaClient } from '../lib/generated/prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -60,24 +60,22 @@ Your responses should be clear, concise, and respectful to ensure a positive int
 **Here is the booking details in JSON format for your context**
 {context}
 
-`
+`;
 
   const agent = await prisma.agent.create({
     data: {
       name: 'Gigger Followup Agent',
-      systemPrompt
-    }
-  })
-
-  console.log(agent.id)
+      systemPrompt,
+    },
+  });
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

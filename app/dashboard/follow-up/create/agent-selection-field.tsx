@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import * as React from 'react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -12,13 +12,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Agent } from "@/shared/types"
+} from '@/components/ui/popover';
+import { Agent } from '@/shared/types';
 
 // const agents = [
 //   {
@@ -27,45 +27,48 @@ import { Agent } from "@/shared/types"
 //   },
 // ]
 
-export function AgentSelectionField({selectedAgent, setSelectedAgent}: Readonly<{selectedAgent: string, setSelectedAgent: (value: string) => void}>) {
+export function AgentSelectionField({
+  selectedAgent,
+  setSelectedAgent,
+}: Readonly<{
+  selectedAgent: string;
+  setSelectedAgent: (value: string) => void;
+}>) {
   const [open, setOpen] = React.useState(false);
 
   const [agents, setAgents] = React.useState<Agent[]>([]);
-    const value = selectedAgent;
-    const setValue = setSelectedAgent;
+  const value = selectedAgent;
+  const setValue = setSelectedAgent;
 
-    React.useEffect(() => {
-      async function fetchAgents() {
-        
-        const res = await fetch('/api/agents');
-        const agents = await res.json();
-        console.log(agents)
+  React.useEffect(() => {
+    async function fetchAgents() {
+      const res = await fetch('/api/agents');
+      const agents = await res.json();
 
-        setAgents(agents)
-      }
+      setAgents(agents);
+    }
 
-      fetchAgents();
-      
-    }, [])
+    fetchAgents();
+  }, []);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          role="combobox"
+          variant='outline'
+          role='combobox'
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className='w-[200px] justify-between'
         >
           {value
             ? agents.find((agent) => `${agent.id}` === value)?.name
-            : "Select agent..."}
-          <ChevronsUpDown className="opacity-50" />
+            : 'Select agent...'}
+          <ChevronsUpDown className='opacity-50' />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className='w-[200px] p-0'>
         <Command>
-          <CommandInput placeholder="Search client..." className="h-9" />
+          <CommandInput placeholder='Search client...' className='h-9' />
           <CommandList>
             <CommandEmpty>No client found.</CommandEmpty>
             <CommandGroup>
@@ -74,15 +77,15 @@ export function AgentSelectionField({selectedAgent, setSelectedAgent}: Readonly<
                   key={agent.id}
                   value={`${agent.id}`}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue)
-                    setOpen(false)
+                    setValue(currentValue === value ? '' : currentValue);
+                    setOpen(false);
                   }}
                 >
                   {agent.name}
                   <Check
                     className={cn(
-                      "ml-auto",
-                      value === '' + agent.id ? "opacity-100" : "opacity-0"
+                      'ml-auto',
+                      value === '' + agent.id ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                 </CommandItem>
@@ -92,5 +95,5 @@ export function AgentSelectionField({selectedAgent, setSelectedAgent}: Readonly<
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

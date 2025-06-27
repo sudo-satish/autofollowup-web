@@ -25,8 +25,6 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { name, mobileNumber, countryCode, companyId } = body;
 
-  console.log(body);
-
   const client = await prisma.client.create({
     data: {
       name,

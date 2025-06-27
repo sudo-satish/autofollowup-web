@@ -17,7 +17,6 @@ async function connect() {
     await client.connect();
     await publisher.connect();
     await subscriber.connect();
-    console.log('Connected to Redis');
   } catch (error) {
     console.error('Redis connection error:', error);
     throw error;

@@ -33,7 +33,6 @@ export function FollowUpForm({ companyId }: { companyId: number }) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values);
 
     try {
       const response = await fetch('/api/follow-ups', {
